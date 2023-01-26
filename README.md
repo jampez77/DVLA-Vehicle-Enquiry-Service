@@ -1,2 +1,3 @@
-# DVLA-Vehicle-Checker
-A custom component for connecting to the DVLAs vehicle checker API.
+# DVLA Vehicle Checker for Home Assistant
+
+## Installation

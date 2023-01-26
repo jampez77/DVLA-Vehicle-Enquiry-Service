@@ -1,0 +1,14 @@
+{
+  "codeowners": ["@jampez77"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/jampez77/DVLA-Vehicle-Checker/",
+  "domain": "dvla",
+  "iot_class": "cloud_polling",
+  "name": "DVLA Vehicle Checker",
+  "requirements": [],
+  "version": "1.0.0",
+  "ssdp": [],
+  "zeroconf": [],
+  "homekit": {}
+}
