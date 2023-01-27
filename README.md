@@ -1,4 +1,4 @@
-# ![Logo](logo.png "DVLA Logo")DVLA Vehicle Enquiry Service for Home Assistant
+# ![Logo](logo.png "DVLA Logo") DVLA Vehicle Enquiry Service for Home Assistant
 
 This component provides vehicle details of a specified vehicle into and adds a sensor to [Home Assistant](https://www.home-assistant.io/) which can be used in your own automations.
 
