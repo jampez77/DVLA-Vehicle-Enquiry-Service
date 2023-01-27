@@ -5,6 +5,7 @@
   "documentation": "https://github.com/jampez77/DVLA-Vehicle-Enquiry-Service/",
   "issue_tracker": "https://github.com/jampez77/DVLA-Vehicle-Enquiry-Service/issues",
   "domain": "dvla",
+  "iot_class": "cloud_polling",
   "name": "DVLA Vehicle Enquiry Service",
   "requirements": [],
   "version": "1.0.0",
