@@ -40,7 +40,6 @@ class DVLACoordinator(DataUpdateCoordinator):
         so entities can quickly look up their data.
         """
         try:
-            # cIKMsF5zS59gaSttDldv91M3F063H5gk7A2inSyx
             resp = await self.session.request(
                 method="POST",
                 url=HOST,

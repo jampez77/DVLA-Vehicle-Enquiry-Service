@@ -5,7 +5,7 @@
   "documentation": "https://github.com/jampez77/DVLA-Vehicle-Checker/",
   "domain": "dvla",
   "iot_class": "cloud_polling",
-  "name": "DVLA Vehicle Checker",
+  "name": "DVLA Vehicle Enquiry Service",
   "requirements": [],
   "version": "1.0.0",
   "ssdp": [],

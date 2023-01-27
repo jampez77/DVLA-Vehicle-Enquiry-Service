@@ -87,7 +87,7 @@ class DVLASensor(CoordinatorEntity[DVLACoordinator], SensorEntity):
             identifiers={(DOMAIN, f"DVLA_{name}")},
             manufacturer="DVLA",
             name=name.upper(),
-            configuration_url="https://register-for-ves.driver-vehicle-licensing.api.gov.uk/",
+            configuration_url="https://github.com/jampez77/DVLA-Vehicle-Checker/",
         )
         self._attr_unique_id = f"dvla_{name}-{description.key}".lower()
         self.attrs: dict[str, Any] = {}
