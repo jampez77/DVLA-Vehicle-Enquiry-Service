@@ -37,4 +37,4 @@ Also make sure to select `no` for Testing otherwise you won't have access to any
 [license-shield]: https://img.shields.io/github/license/jampez77/DVLA-Vehicle-Enquiry-Service.svg?style=for-the-badge
 [maintenance-shield]: https://img.shields.io/badge/Maintainer-Jamie%20Nandhra--Pezone-blue
 [releases-shield]: https://img.shields.io/github/v/release/jampez77/DVLA-Vehicle-Enquiry-Service.svg?style=for-the-badge
-[releases]: https://github.com/jampez77/DVLA-Vehicle-Enquiry-Service/releases
+[releases]: https://github.com/jampez77/DVLA-Vehicle-Enquiry-Service/releases 
