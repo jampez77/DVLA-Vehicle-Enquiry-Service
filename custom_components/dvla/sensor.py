@@ -122,6 +122,8 @@ class DVLASensor(CoordinatorEntity[DVLACoordinator], SensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
+        for key in self.coordinator.data:
+            self.attrs[key] = self.coordinator.data[key]
         return self.attrs
 
     async def async_update(self) -> None:
@@ -130,9 +132,6 @@ class DVLASensor(CoordinatorEntity[DVLACoordinator], SensorEntity):
         Only used by the generic entity update service.
         """
         try:
-            for key in self.coordinator.data:
-                self.attrs[key] = self.coordinator.data[key]
-
             self._state = (
                 str(self.coordinator.data["yearOfManufacture"])
                 + " "
