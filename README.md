@@ -16,15 +16,7 @@ Enjoying this? Help me out with a :beers: or :coffee:!
 
 
 ## Installation through [HACS](https://hacs.xyz/)
-There is an active [PR](https://github.com/hacs/default/pull/2058) to get this into [HACS](https://hacs.xyz/), once that is merged then you can install the **DVLA Vehicle Enquiry Service** integration by searching for it there in HA instance.
-
-Until then you will have to add this repository manually:
-
-Go to HACS -> 3 dot menu -> Custom Repositories:- 
-
-Paste `https://github.com/jampez77/DVLA-Vehicle-Enquiry-Service` into Repository field and select `Integration`
-
-Now you should be able to find it in HACS as normal.
+You can install the **DVLA Vehicle Enquiry Service** integration by searching for it there in HA instance.
 
 ## Manual Installation
 Use this route only if you do not want to use [HACS](https://hacs.xyz/) and love the pain of manually installing regular updates.
@@ -37,6 +29,31 @@ Before you can configure this sensor, you must register and obtain and API key a
 As the integration only queries the API twice a day you can put `62` for `Estimated monthly enquiry volumes`. You will need to multiple this by the number of vehicles you wish to query.
 
 Also make sure to select `no` for Testing otherwise you won't have access to any live data.
+
+---
+## Data 
+The following attributes can be expose as attributes in HA. It's also worth mentioning that some data won't be returned if it doesn't apply to the specific vehicle.
+
+- registrationNumber
+- taxStatus
+- taxDueDate
+- motStatus
+- make
+- yearOfManufacture
+- engineCapacity
+- co2Emissions
+- fuelType
+- markedForExport
+- colour
+- typeApproval
+- dateOfLastV5CIssued
+- motExpiryDate
+- wheelplan
+- monthOfFirstRegistration
+- artEndDate
+- revenueWeight
+- euroStatus
+- realDrivingEmissions
 
 ---
 
