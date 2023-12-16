@@ -1,5 +1,5 @@
 """DVLA sensor platform."""
-from datetime import timedelta
+from datetime import timedelta, date
 import logging
 from aiohttp import ClientError
 from homeassistant.core import HomeAssistant, callback
@@ -14,6 +14,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.components.sensor import (
     SensorEntity,
     SensorEntityDescription,
+    SensorDeviceClass,
 )
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
@@ -38,7 +39,8 @@ SENSOR_TYPES = [
     SensorEntityDescription(
         key="taxDueDate",
         name="Tax Due Date",
-        icon="mdi:calendar-clock"
+        icon="mdi:calendar-clock",
+        device_class=SensorDeviceClass.DATE
     ),
     SensorEntityDescription(
         key="motStatus",
@@ -94,12 +96,14 @@ SENSOR_TYPES = [
     SensorEntityDescription(
         key="dateOfLastV5CIssued",
         name="Date of Last V5C Issued",
-        icon="mdi:calendar"
+        icon="mdi:calendar",
+        device_class=SensorDeviceClass.DATE
     ),
     SensorEntityDescription(
         key="motExpiryDate",
         name="Mot Expiry Date",
-        icon="mdi:calendar-check"
+        icon="mdi:calendar-check",
+        device_class=SensorDeviceClass.DATE
     ),
     SensorEntityDescription(
         key="wheelplan",
@@ -179,8 +183,11 @@ class DVLASensor(CoordinatorEntity[DVLACoordinator], SensorEntity):
         return bool(self.coordinator.data)
 
     @property
-    def native_value(self) -> str:
-        return self.coordinator.data.get(self.entity_description.key, "unknown")
+    def native_value(self) -> str | date:
+        value = self.coordinator.data.get(self.entity_description.key, "unknown")
+        if self.entity_description.device_class == SensorDeviceClass.DATE:
+            return date.fromisoformat(value)
+        return value
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
