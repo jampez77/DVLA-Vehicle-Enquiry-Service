@@ -194,23 +194,3 @@ class DVLASensor(CoordinatorEntity[DVLACoordinator], SensorEntity):
         for key in self.coordinator.data:
             self.attrs[key] = self.coordinator.data[key]
         return self.attrs
-
-
-class DVLAEntity(CoordinatorEntity, SensorEntity):
-    """An entity using CoordinatorEntity."""
-
-    def __init__(self, coordinator, idx):
-        """Pass coordinator to CoordinatorEntity."""
-        super().__init__(coordinator, context=idx)
-        self.idx = idx
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Return the state attributes."""
-        return self.entity_description.attr_fn(self)
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle data update."""
-
-        self.async_write_ha_state()
