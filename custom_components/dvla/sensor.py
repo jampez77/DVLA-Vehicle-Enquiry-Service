@@ -4,6 +4,7 @@ import logging
 from aiohttp import ClientError
 from homeassistant.core import HomeAssistant, callback
 from typing import Any
+from homeassistant.const import UnitOfMass
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from .const import DOMAIN, CONF_REG_NUMBER
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -87,7 +88,8 @@ SENSOR_TYPES = [
     SensorEntityDescription(
         key="revenueWeight",
         name="Revenue Weight",
-        icon="mdi:weight"
+        icon="mdi:weight",
+        native_unit_of_measurement=UnitOfMass.KILOGRAMS
     ),
     SensorEntityDescription(
         key="dateOfLastV5CIssued",
