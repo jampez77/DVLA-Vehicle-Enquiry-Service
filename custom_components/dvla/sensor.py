@@ -73,11 +73,6 @@ SENSOR_TYPES = [
         icon="mdi:engine"
     ),
     SensorEntityDescription(
-        key="markedForExport",
-        name="Marked for Export",
-        icon="mdi:export"
-    ),
-    SensorEntityDescription(
         key="colour",
         name="Colour",
         icon="mdi:spray"
