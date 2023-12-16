@@ -178,9 +178,9 @@ class DVLASensor(CoordinatorEntity[DVLACoordinator], SensorEntity):
         return bool(self.coordinator.data)
 
     @property
-    def native_value(self) -> str | date:
-        value = self.coordinator.data.get(self.entity_description.key, "unknown")
-        if self.entity_description.device_class == SensorDeviceClass.DATE:
+    def native_value(self) -> str | date | None:
+        value = self.coordinator.data.get(self.entity_description.key, None)
+        if value and self.entity_description.device_class == SensorDeviceClass.DATE:
             return date.fromisoformat(value)
         return value
 
