@@ -1,8 +1,7 @@
 """DVLA sensor platform."""
 from datetime import timedelta, date
 import logging
-from aiohttp import ClientError
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 from typing import Any
 from homeassistant.const import UnitOfMass
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType

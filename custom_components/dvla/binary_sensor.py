@@ -1,10 +1,8 @@
 """DVLA binary sensor platform."""
 from dataclasses import dataclass
-from datetime import timedelta, date
+from datetime import timedelta
 import logging
-from aiohttp import ClientError
-from homeassistant.core import HomeAssistant, callback
-from homeassistant.const import STATE_ON
+from homeassistant.core import HomeAssistant
 from typing import Any
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from .const import DOMAIN, CONF_REG_NUMBER
