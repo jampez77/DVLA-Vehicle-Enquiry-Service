@@ -99,7 +99,11 @@ class DVLACalendarSensor(CoordinatorEntity[DVLACoordinator], CalendarEntity):
         """Return calendar events."""
         events = []
         for date_sensor_type in DATE_SENSOR_TYPES:
-            value = date.fromisoformat(self.coordinator.data.get(date_sensor_type.key))
+            raw_value = self.coordinator.data.get(date_sensor_type.key)
+            if not raw_value:
+                _LOGGER.warn(f'No date for {date_sensor_type.key}')
+                continue
+            value = date.fromisoformat(raw_value)
             if value >= start_date.date():
                 event_name = date_sensor_type.name.replace(' Date', '')
                 events.append(CalendarEvent(value, value, event_name))
