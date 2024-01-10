@@ -168,6 +168,7 @@ class DVLASensor(CoordinatorEntity[DVLACoordinator], SensorEntity):
             configuration_url="https://github.com/jampez77/DVLA-Vehicle-Checker/",
         )
         self._attr_unique_id = f"{DOMAIN}-{name}-{description.key}".lower()
+        self.entity_id = f"sensor.{DOMAIN}_{name}_{description.key}".lower()
         self.attrs: dict[str, Any] = {}
         self.entity_description = description
 
