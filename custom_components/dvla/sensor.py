@@ -43,7 +43,7 @@ SENSOR_TYPES = [
     ),
     SensorEntityDescription(
         key="motStatus",
-        name="Mot Status",
+        name="MOT Status",
         icon="mdi:car"
     ),
     SensorEntityDescription(
@@ -95,7 +95,7 @@ SENSOR_TYPES = [
     ),
     SensorEntityDescription(
         key="motExpiryDate",
-        name="Mot Expiry Date",
+        name="MOT Expiry Date",
         icon="mdi:calendar-check",
         device_class=SensorDeviceClass.DATE
     ),
