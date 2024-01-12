@@ -39,7 +39,7 @@ SENSOR_TYPES = [
     ),
     DVLABinarySensorEntityDescription(
         key="motStatus",
-        name="Mot Valid",
+        name="MOT Valid",
         icon="mdi:car",
         on_value="Valid"
     ),
