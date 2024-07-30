@@ -1,7 +1,6 @@
 """DVLA binary sensor platform."""
 from dataclasses import dataclass
 from datetime import timedelta
-import logging
 from homeassistant.core import HomeAssistant
 from typing import Any
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
@@ -18,10 +17,6 @@ from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
 )
 from .coordinator import DVLACoordinator
-
-_LOGGER = logging.getLogger(__name__)
-# Time between updating data from GitHub
-SCAN_INTERVAL = timedelta(minutes=10)
 
 
 @dataclass
@@ -69,7 +64,8 @@ async def async_setup_entry(
 
     name = entry.data[CONF_REG_NUMBER]
 
-    sensors = [DVLABinarySensor(coordinator, name, description) for description in SENSOR_TYPES]
+    sensors = [DVLABinarySensor(coordinator, name, description)
+               for description in SENSOR_TYPES]
     async_add_entities(sensors, update_before_add=True)
 
 
@@ -85,7 +81,8 @@ async def async_setup_platform(
 
     name = config[CONF_REG_NUMBER]
 
-    sensors = [DVLABinarySensor(coordinator, name, description) for description in SENSOR_TYPES]
+    sensors = [DVLABinarySensor(coordinator, name, description)
+               for description in SENSOR_TYPES]
     async_add_entities(sensors, update_before_add=True)
 
 
@@ -107,7 +104,8 @@ class DVLABinarySensor(CoordinatorEntity[DVLACoordinator], BinarySensorEntity):
             configuration_url="https://github.com/jampez77/DVLA-Vehicle-Checker/",
         )
         self._attr_unique_id = f"{DOMAIN}-{name}-{description.key}-binary".lower()
-        self.entity_id = f"binary_sensor.{DOMAIN}_{name}_{description.key}".lower()
+        self.entity_id = f"binary_sensor.{DOMAIN}_{name}_{description.key}".lower(
+        )
         self.attrs: dict[str, Any] = {}
         self.entity_description = description
 
@@ -119,7 +117,8 @@ class DVLABinarySensor(CoordinatorEntity[DVLACoordinator], BinarySensorEntity):
     @property
     def is_on(self) -> bool | None:
         """Return true if the binary sensor is on."""
-        value: str | bool = self.coordinator.data.get(self.entity_description.key, None)
+        value: str | bool = self.coordinator.data.get(
+            self.entity_description.key, None)
 
         on_value = self.entity_description.on_value
         if type(on_value) is str:

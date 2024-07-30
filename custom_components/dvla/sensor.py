@@ -1,6 +1,5 @@
 """DVLA sensor platform."""
 from datetime import timedelta, date
-import logging
 from homeassistant.core import HomeAssistant
 from typing import Any
 from homeassistant.const import UnitOfMass
@@ -19,10 +18,6 @@ from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
 )
 from .coordinator import DVLACoordinator
-
-_LOGGER = logging.getLogger(__name__)
-# Time between updating data from GitHub
-SCAN_INTERVAL = timedelta(minutes=10)
 
 SENSOR_TYPES = [
     SensorEntityDescription(
@@ -130,7 +125,8 @@ async def async_setup_entry(
 
     name = entry.data[CONF_REG_NUMBER]
 
-    sensors = [DVLASensor(coordinator, name, description) for description in SENSOR_TYPES]
+    sensors = [DVLASensor(coordinator, name, description)
+               for description in SENSOR_TYPES]
     async_add_entities(sensors, update_before_add=True)
 
 
@@ -146,7 +142,8 @@ async def async_setup_platform(
 
     name = config[CONF_REG_NUMBER]
 
-    sensors = [DVLASensor(coordinator, name, description) for description in SENSOR_TYPES]
+    sensors = [DVLASensor(coordinator, name, description)
+               for description in SENSOR_TYPES]
     async_add_entities(sensors, update_before_add=True)
 
 

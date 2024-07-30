@@ -1,6 +1,5 @@
 """DVLA sensor platform."""
 from datetime import timedelta, date, datetime
-import logging
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from .const import DOMAIN, CONF_REG_NUMBER
@@ -20,11 +19,8 @@ from homeassistant.util.dt import start_of_local_day
 from .coordinator import DVLACoordinator
 from .sensor import SENSOR_TYPES
 
-_LOGGER = logging.getLogger(__name__)
-# Time between updating data from GitHub
-SCAN_INTERVAL = timedelta(minutes=10)
-
-DATE_SENSOR_TYPES = [st for st in SENSOR_TYPES if st.device_class == SensorDeviceClass.DATE]
+DATE_SENSOR_TYPES = [
+    st for st in SENSOR_TYPES if st.device_class == SensorDeviceClass.DATE]
 
 
 async def async_setup_entry(
@@ -101,7 +97,6 @@ class DVLACalendarSensor(CoordinatorEntity[DVLACoordinator], CalendarEntity):
         for date_sensor_type in DATE_SENSOR_TYPES:
             raw_value = self.coordinator.data.get(date_sensor_type.key)
             if not raw_value:
-                _LOGGER.warn(f'No date for {date_sensor_type.key}')
                 continue
             value = date.fromisoformat(raw_value)
             if value >= start_date.date():

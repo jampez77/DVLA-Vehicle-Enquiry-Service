@@ -12,7 +12,19 @@
             "user": {
                 "data": {
                     "api_key": "API Key",
-                    "reg_number": "Registration Number"
+                    "reg_number": "Registration Number",
+                    "scan_interval": "Scan Interval (in number of seconds)"
+                }
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "api_key": "API Key",
+                    "reg_number": "Registration Number",
+                    "scan_interval": "Scan Interval (in number of seconds)"
                 }
             }
         }

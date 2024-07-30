@@ -4,8 +4,10 @@ import logging
 from homeassistant.const import (
     CONF_API_KEY,
     CONTENT_TYPE_JSON,
+    CONF_SCAN_INTERVAL,
 )
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
@@ -18,16 +20,17 @@ _LOGGER = logging.getLogger(__name__)
 class DVLACoordinator(DataUpdateCoordinator):
     """Data coordinator."""
 
-    def __init__(self, hass, session, data):
+    def __init__(self, hass: HomeAssistant, session, data) -> None:
         """Initialize coordinator."""
 
+        scan_interval = data.get(CONF_SCAN_INTERVAL, 21600)
         super().__init__(
             hass,
             _LOGGER,
             # Name of the data. For logging purposes.
             name="DVLA",
             # Polling interval. Will only be polled if there are subscribers.
-            update_interval=timedelta(seconds=21600),
+            update_interval=timedelta(seconds=scan_interval),
         )
         self.session = session
         self.api_key = data[CONF_API_KEY]
@@ -72,7 +75,8 @@ class DVLACoordinator(DataUpdateCoordinator):
             )
 
         if "message" in body:
-            raise UnknownError(f"Error setting up {self.reg_number}: {body['message']}")
+            raise UnknownError(
+                f"Error setting up {self.reg_number}: {body['message']}")
 
         return body
 

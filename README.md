@@ -26,7 +26,9 @@ Use this route only if you do not want to use [HACS](https://hacs.xyz/) and love
 
 Before you can configure this sensor, you must register and obtain and API key at [VES API Registration](https://register-for-ves.driver-vehicle-licensing.api.gov.uk/).
 
-As the integration only queries the API twice a day you can put `62` for `Estimated monthly enquiry volumes`. You will need to multiple this by the number of vehicles you wish to query.
+The API is ratelimited, this is predefined when filling in the registration form under `Estimated monthly enquiry volumes` input. The default `scan interval` is every 6 hours (21600 seconds), this translates to about `62` for `Estimated monthly enquiry volumes`. 
+
+You can change this value at any time by configuring the `scan interval` for an instance. You should take the rate limiting into account when setting the `scan interval` and vice versa.
 
 Also make sure to select `no` for Testing otherwise you won't have access to any live data.
 

@@ -16,16 +16,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
     # Registers update listener to update config entry when options are updated.
-    unsub_options_update_listener = entry.add_update_listener(options_update_listener)
+    unsub_options_update_listener = entry.add_update_listener(
+        options_update_listener)
     # Store a reference to the unsubscribe function to cleanup if an entry is unloaded.
     hass_data["unsub_options_update_listener"] = unsub_options_update_listener
     hass.data[DOMAIN][entry.entry_id] = hass_data
 
     # Forward the setup to each platform.
-    for platform in PLATFORMS:
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(entry, platform)
-        )
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
 
@@ -52,6 +50,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Set up the GitHub Custom component from yaml configuration."""
+    """Set up the DVLA component from yaml configuration."""
     hass.data.setdefault(DOMAIN, {})
     return True
