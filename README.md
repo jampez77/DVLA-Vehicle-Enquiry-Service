@@ -32,6 +32,19 @@ You can change this value at any time by configuring the `scan interval` for an 
 
 Also make sure to select `no` for Testing otherwise you won't have access to any live data.
 
+## Contributing
+
+Contirbutions are welcome from everyone! By contributing to this project, you help improve it and make it more useful for the community. Here's how you can get involved:
+
+### How to Contribute
+
+1. **Report Bugs**: If you encounter a bug, please open an issue with details about the problem and how to reproduce it.
+2. **Suggest Features**: Have an idea for a new feature? I'd love to hear about it! Please open an issue to discuss it.
+3. **Submit Pull Requests**: If you'd like to contribute code:
+   - Fork the repository and create your branch from `main`.
+   - Make your changes in the new branch.
+   - Open a pull request with a clear description of what you’ve done.
+
 ---
 ## Data 
 The following attributes can be expose as attributes in HA. It's also worth mentioning that some data won't be returned if it doesn't apply to the specific vehicle.
