@@ -6,12 +6,15 @@
         "error": {
             "cannot_connect": "Failed to connect",
             "invalid_auth": "Invalid authentication",
-            "unknown": "Unexpected error"
+            "no_calendar_selected": "You must select at least one calendar",
+            "unknown": "Unexpected error",
+            "vehicle_exists": "This vehicle already exists"
         },
         "step": {
             "user": {
                 "data": {
-                    "api_key": "API Key",
+                    "api_key": "API key",
+                    "calendars": "Add events to calendar(s)",
                     "reg_number": "Registration Number",
                     "scan_interval": "Scan Interval (in number of seconds)"
                 }
@@ -22,8 +25,6 @@
         "step": {
             "init": {
                 "data": {
-                    "api_key": "API Key",
-                    "reg_number": "Registration Number",
                     "scan_interval": "Scan Interval (in number of seconds)"
                 }
             }

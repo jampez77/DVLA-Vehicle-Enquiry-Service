@@ -1,4 +1,5 @@
 """DVLA sensor platform."""
+
 from datetime import timedelta, date
 from homeassistant.core import HomeAssistant
 from typing import Any
@@ -21,88 +22,52 @@ from .coordinator import DVLACoordinator
 
 SENSOR_TYPES = [
     SensorEntityDescription(
-        key="registrationNumber",
-        name="Registration Number",
-        icon="mdi:car"
+        key="registrationNumber", name="Registration Number", icon="mdi:car"
     ),
-    SensorEntityDescription(
-        key="taxStatus",
-        name="Tax Status",
-        icon="mdi:car"
-    ),
+    SensorEntityDescription(key="taxStatus", name="Tax Status", icon="mdi:car"),
     SensorEntityDescription(
         key="taxDueDate",
         name="Tax Due Date",
         icon="mdi:calendar-clock",
-        device_class=SensorDeviceClass.DATE
+        device_class=SensorDeviceClass.DATE,
+    ),
+    SensorEntityDescription(key="motStatus", name="MOT Status", icon="mdi:car"),
+    SensorEntityDescription(key="make", name="Make", icon="mdi:car"),
+    SensorEntityDescription(
+        key="yearOfManufacture", name="Year of Manufacture", icon="mdi:car"
     ),
     SensorEntityDescription(
-        key="motStatus",
-        name="MOT Status",
-        icon="mdi:car"
+        key="engineCapacity", name="Engine Capacity", icon="mdi:engine"
     ),
     SensorEntityDescription(
-        key="make",
-        name="Make",
-        icon="mdi:car"
+        key="co2Emissions", name="CO2 Emissions", icon="mdi:engine"
     ),
-    SensorEntityDescription(
-        key="yearOfManufacture",
-        name="Year of Manufacture",
-        icon="mdi:car"
-    ),
-    SensorEntityDescription(
-        key="engineCapacity",
-        name="Engine Capacity",
-        icon="mdi:engine"
-    ),
-    SensorEntityDescription(
-        key="co2Emissions",
-        name="CO2 Emissions",
-        icon="mdi:engine"
-    ),
-    SensorEntityDescription(
-        key="fuelType",
-        name="Fuel Type",
-        icon="mdi:engine"
-    ),
-    SensorEntityDescription(
-        key="colour",
-        name="Colour",
-        icon="mdi:spray"
-    ),
-    SensorEntityDescription(
-        key="typeApproval",
-        name="Type Approval",
-        icon="mdi:car"
-    ),
+    SensorEntityDescription(key="fuelType", name="Fuel Type", icon="mdi:engine"),
+    SensorEntityDescription(key="colour", name="Colour", icon="mdi:spray"),
+    SensorEntityDescription(key="typeApproval", name="Type Approval", icon="mdi:car"),
     SensorEntityDescription(
         key="revenueWeight",
         name="Revenue Weight",
         icon="mdi:weight",
-        native_unit_of_measurement=UnitOfMass.KILOGRAMS
+        native_unit_of_measurement=UnitOfMass.KILOGRAMS,
     ),
     SensorEntityDescription(
         key="dateOfLastV5CIssued",
         name="Date of Last V5C Issued",
         icon="mdi:calendar",
-        device_class=SensorDeviceClass.DATE
+        device_class=SensorDeviceClass.DATE,
     ),
     SensorEntityDescription(
         key="motExpiryDate",
         name="MOT Expiry Date",
         icon="mdi:calendar-check",
-        device_class=SensorDeviceClass.DATE
+        device_class=SensorDeviceClass.DATE,
     ),
-    SensorEntityDescription(
-        key="wheelplan",
-        name="Wheelplan",
-        icon="mdi:car"
-    ),
+    SensorEntityDescription(key="wheelplan", name="Wheelplan", icon="mdi:car"),
     SensorEntityDescription(
         key="monthOfFirstRegistration",
         name="Month of First Registration",
-        icon="mdi:calendar"
+        icon="mdi:calendar",
     ),
 ]
 
@@ -112,7 +77,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Setup sensors from a config entry created in the integrations UI."""
+    """Set up sensors from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][entry.entry_id]
     # Update our config to include new repos and remove those that have been removed.
     if entry.options:
@@ -125,25 +90,9 @@ async def async_setup_entry(
 
     name = entry.data[CONF_REG_NUMBER]
 
-    sensors = [DVLASensor(coordinator, name, description)
-               for description in SENSOR_TYPES]
-    async_add_entities(sensors, update_before_add=True)
-
-
-async def async_setup_platform(
-    hass: HomeAssistant,
-    config: ConfigType,
-    async_add_entities: AddEntitiesCallback,
-    _: DiscoveryInfoType | None = None,
-) -> None:
-    """Set up the sensor platform."""
-    session = async_get_clientsession(hass)
-    coordinator = DVLACoordinator(hass, session, config)
-
-    name = config[CONF_REG_NUMBER]
-
-    sensors = [DVLASensor(coordinator, name, description)
-               for description in SENSOR_TYPES]
+    sensors = [
+        DVLASensor(coordinator, name, description) for description in SENSOR_TYPES
+    ]
     async_add_entities(sensors, update_before_add=True)
 
 
@@ -176,6 +125,7 @@ class DVLASensor(CoordinatorEntity[DVLACoordinator], SensorEntity):
 
     @property
     def native_value(self) -> str | date | None:
+        """Native value."""
         value = self.coordinator.data.get(self.entity_description.key)
         if value and self.entity_description.device_class == SensorDeviceClass.DATE:
             return date.fromisoformat(value)
@@ -183,6 +133,7 @@ class DVLASensor(CoordinatorEntity[DVLACoordinator], SensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
+        """Define entity attributes."""
         for key in self.coordinator.data:
             self.attrs[key] = self.coordinator.data[key]
         return self.attrs

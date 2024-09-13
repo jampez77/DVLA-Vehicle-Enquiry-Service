@@ -1,4 +1,5 @@
 """DVLA binary sensor platform."""
+
 from dataclasses import dataclass
 from datetime import timedelta
 from homeassistant.core import HomeAssistant
@@ -21,27 +22,20 @@ from .coordinator import DVLACoordinator
 
 @dataclass
 class DVLABinarySensorEntityDescription(BinarySensorEntityDescription):
+    """DVLA binary sensor description."""
 
     on_value: str | bool = True
 
 
 SENSOR_TYPES = [
     DVLABinarySensorEntityDescription(
-        key="taxStatus",
-        name="Taxed",
-        icon="mdi:car",
-        on_value="Taxed"
+        key="taxStatus", name="Taxed", icon="mdi:car", on_value="Taxed"
     ),
     DVLABinarySensorEntityDescription(
-        key="motStatus",
-        name="MOT Valid",
-        icon="mdi:car",
-        on_value="Valid"
+        key="motStatus", name="MOT Valid", icon="mdi:car", on_value="Valid"
     ),
     DVLABinarySensorEntityDescription(
-        key="markedForExport",
-        name="Marked for Export",
-        icon="mdi:export"
+        key="markedForExport", name="Marked for Export", icon="mdi:export"
     ),
 ]
 
@@ -51,7 +45,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Setup sensors from a config entry created in the integrations UI."""
+    """Set up sensors from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][entry.entry_id]
     # Update our config to include new repos and remove those that have been removed.
     if entry.options:
@@ -64,25 +58,9 @@ async def async_setup_entry(
 
     name = entry.data[CONF_REG_NUMBER]
 
-    sensors = [DVLABinarySensor(coordinator, name, description)
-               for description in SENSOR_TYPES]
-    async_add_entities(sensors, update_before_add=True)
-
-
-async def async_setup_platform(
-    hass: HomeAssistant,
-    config: ConfigType,
-    async_add_entities: AddEntitiesCallback,
-    _: DiscoveryInfoType | None = None,
-) -> None:
-    """Set up the sensor platform."""
-    session = async_get_clientsession(hass)
-    coordinator = DVLACoordinator(hass, session, config)
-
-    name = config[CONF_REG_NUMBER]
-
-    sensors = [DVLABinarySensor(coordinator, name, description)
-               for description in SENSOR_TYPES]
+    sensors = [
+        DVLABinarySensor(coordinator, name, description) for description in SENSOR_TYPES
+    ]
     async_add_entities(sensors, update_before_add=True)
 
 
@@ -104,8 +82,7 @@ class DVLABinarySensor(CoordinatorEntity[DVLACoordinator], BinarySensorEntity):
             configuration_url="https://github.com/jampez77/DVLA-Vehicle-Checker/",
         )
         self._attr_unique_id = f"{DOMAIN}-{name}-{description.key}-binary".lower()
-        self.entity_id = f"binary_sensor.{DOMAIN}_{name}_{description.key}".lower(
-        )
+        self.entity_id = f"binary_sensor.{DOMAIN}_{name}_{description.key}".lower()
         self.attrs: dict[str, Any] = {}
         self.entity_description = description
 
@@ -117,8 +94,7 @@ class DVLABinarySensor(CoordinatorEntity[DVLACoordinator], BinarySensorEntity):
     @property
     def is_on(self) -> bool | None:
         """Return true if the binary sensor is on."""
-        value: str | bool = self.coordinator.data.get(
-            self.entity_description.key, None)
+        value: str | bool = self.coordinator.data.get(self.entity_description.key, None)
 
         on_value = self.entity_description.on_value
         if type(on_value) is str:
@@ -128,6 +104,7 @@ class DVLABinarySensor(CoordinatorEntity[DVLACoordinator], BinarySensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
+        """Define entity attributes."""
         for key in self.coordinator.data:
             self.attrs[key] = self.coordinator.data[key]
         return self.attrs
