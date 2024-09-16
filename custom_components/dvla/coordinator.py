@@ -1,18 +1,13 @@
 """DVLA Coordinator."""
 from datetime import timedelta
 import logging
-from homeassistant.const import (
-    CONF_API_KEY,
-    CONTENT_TYPE_JSON,
-    CONF_SCAN_INTERVAL,
-)
-from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
+
+from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL, CONTENT_TYPE_JSON
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.update_coordinator import (
-    DataUpdateCoordinator,
-    UpdateFailed,
-)
-from .const import HOST, CONF_REG_NUMBER
+from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+
+from .const import CONF_REG_NUMBER, HOST
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -1,22 +1,20 @@
 """DVLA binary sensor platform."""
 
 from dataclasses import dataclass
-from datetime import timedelta
-from homeassistant.core import HomeAssistant
 from typing import Any
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
-from .const import DOMAIN, CONF_REG_NUMBER
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.config_entries import ConfigEntry
+
 from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-)
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
+from .const import CONF_REG_NUMBER, DOMAIN
 from .coordinator import DVLACoordinator
 
 

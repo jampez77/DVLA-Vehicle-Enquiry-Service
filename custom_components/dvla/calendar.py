@@ -1,22 +1,21 @@
 """DVLA sensor platform."""
 
-from datetime import timedelta, date, datetime
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
-from .const import DOMAIN, CONF_REG_NUMBER, CONF_CALENDARS
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.components.calendar import CalendarEntity, CalendarEvent
-from homeassistant.components.sensor import SensorDeviceClass
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-)
-from homeassistant.exceptions import ServiceValidationError, HomeAssistantError
-import uuid
+from datetime import date, datetime
 import hashlib
 import json
+import uuid
+
+from homeassistant.components.calendar import CalendarEntity, CalendarEvent
+from homeassistant.components.sensor import SensorDeviceClass
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
+from .const import CONF_CALENDARS, CONF_REG_NUMBER, DOMAIN
 from .coordinator import DVLACoordinator
 from .sensor import SENSOR_TYPES
 
@@ -36,21 +35,21 @@ async def async_setup_entry(
     if entry.options:
         config.update(entry.options)
 
+    reg_number = entry.data[CONF_REG_NUMBER]
+
+    calendars = entry.data[CONF_CALENDARS]
+
     session = async_get_clientsession(hass)
     coordinator = DVLACoordinator(hass, session, entry.data)
 
     await coordinator.async_refresh()
 
-    name = entry.data[CONF_REG_NUMBER]
-
-    calendars = entry.data[CONF_CALENDARS]
-
-    sensors = [DVLACalendarSensor(coordinator, name)]
+    sensors = [DVLACalendarSensor(coordinator, reg_number)]
 
     for calendar in calendars:
         if calendar != "None":
             for sensor in sensors:
-                events = sensor.get_events(datetime.today())
+                events = sensor.get_events(datetime.today(), reg_number)
                 for event in events:
                     await add_to_calendar(hass, calendar, event, entry)
 
@@ -168,18 +167,19 @@ class DVLACalendarSensor(CoordinatorEntity[DVLACoordinator], CalendarEntity):
     def __init__(
         self,
         coordinator: DVLACoordinator,
-        name: str,
+        reg_number: str,
     ) -> None:
         """Initialize."""
         super().__init__(coordinator)
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, f"{name}")},
+            identifiers={(DOMAIN, f"{reg_number}")},
             manufacturer=coordinator.data.get("make"),
-            name=name.upper(),
+            name=reg_number.upper(),
             configuration_url="https://github.com/jampez77/DVLA-Vehicle-Checker/",
         )
-        self._attr_unique_id = f"{DOMAIN}-{name}-calendar".lower()
-        self._attr_name = f"{DOMAIN} - {name}".upper()
+        self._attr_unique_id = f"{DOMAIN}-{reg_number}-calendar".lower()
+        self._attr_name = f"{DOMAIN} - {reg_number}".upper()
+        self.reg_number = reg_number
 
     @property
     def available(self) -> bool:
@@ -189,10 +189,10 @@ class DVLACalendarSensor(CoordinatorEntity[DVLACoordinator], CalendarEntity):
     @property
     def event(self) -> CalendarEvent | None:
         """Return the next upcoming event."""
-        events = self.get_events(datetime.today())
+        events = self.get_events(datetime.today(), self.reg_number)
         return sorted(events, key=lambda c: c.start)[0]
 
-    def get_events(self, start_date: datetime) -> list[CalendarEvent]:
+    def get_events(self, start_date: datetime, reg_number: str) -> list[CalendarEvent]:
         """Return calendar events."""
         events = []
         for date_sensor_type in DATE_SENSOR_TYPES:
@@ -201,7 +201,7 @@ class DVLACalendarSensor(CoordinatorEntity[DVLACoordinator], CalendarEntity):
                 continue
             value = date.fromisoformat(raw_value)
             if value >= start_date.date():
-                event_name = date_sensor_type.name.replace(" Date", "")
+                event_name = date_sensor_type.name.replace(" Date", f" - {reg_number}")
                 events.append(CalendarEvent(value, value, event_name))
         return events
 
@@ -214,6 +214,6 @@ class DVLACalendarSensor(CoordinatorEntity[DVLACoordinator], CalendarEntity):
         """Return calendar events within a datetime range."""
         return [
             event
-            for event in self.get_events(start_date)
+            for event in self.get_events(start_date, self.reg_number)
             if event.start <= end_date.date()
         ]

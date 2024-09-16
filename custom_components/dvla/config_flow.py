@@ -2,30 +2,31 @@
 
 from __future__ import annotations
 
+from collections import OrderedDict
 import logging
 from typing import Any
 
 import voluptuous as vol
-from collections import OrderedDict
-from homeassistant.core import callback
+
 from homeassistant import config_entries
-from homeassistant.core import HomeAssistant
+from homeassistant.components.calendar import CalendarEntityFeature
+from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
-import homeassistant.helpers.config_validation as cv
-from .const import DOMAIN, CONF_REG_NUMBER, CONF_CALENDARS
-from .coordinator import DVLACoordinator
-from homeassistant.helpers.entity_registry import async_get
-from homeassistant.components.calendar import CalendarEntityFeature
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL
+import homeassistant.helpers.config_validation as cv
+
+from .const import CONF_CALENDARS, CONF_REG_NUMBER, DOMAIN
+from .coordinator import DVLACoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
 
 async def _get_calendar_entities(hass: HomeAssistant) -> list[str]:
     """Retrieve calendar entities."""
-    entity_registry = async_get(hass)
+    entity_registry = er.async_get(hass)
     calendar_entities = {}
     for entity_id, entity in entity_registry.entities.items():
         if entity_id.startswith("calendar."):

@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import asyncio
-from homeassistant.helpers.typing import ConfigType
+
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, ServiceCall
-from .const import DOMAIN
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.typing import ConfigType
+
+from .const import DOMAIN
 
 PLATFORMS = [Platform.BINARY_SENSOR, Platform.CALENDAR, Platform.SENSOR]
 
