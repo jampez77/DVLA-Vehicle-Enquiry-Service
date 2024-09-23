@@ -78,12 +78,18 @@ class DVLAFlowHandler(config_entries.OptionsFlow):
     ) -> FlowResult:
         """Manage the options."""
 
+        calendar_entities = await _get_calendar_entities(self.hass)
+
         options_schema = vol.Schema(
             {
                 vol.Required(
                     CONF_SCAN_INTERVAL,
                     default=self.config_entry.data.get(CONF_SCAN_INTERVAL, 21600),
                 ): cv.positive_int,
+                vol.Required(
+                    CONF_CALENDARS,
+                    default=self.config_entry.data.get(CONF_CALENDARS, []),
+                ): cv.multi_select(calendar_entities),
             }
         )
 
