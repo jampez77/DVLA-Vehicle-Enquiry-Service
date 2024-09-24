@@ -75,7 +75,8 @@ class DVLABinarySensor(CoordinatorEntity[DVLACoordinator], BinarySensorEntity):
         super().__init__(coordinator)
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, f"{name}")},
-            manufacturer=coordinator.data.get("make"),
+            manufacturer=DOMAIN.upper(),
+            model=coordinator.data.get("make"),
             name=name.upper(),
             configuration_url="https://github.com/jampez77/DVLA-Vehicle-Checker/",
         )
@@ -83,7 +84,7 @@ class DVLABinarySensor(CoordinatorEntity[DVLACoordinator], BinarySensorEntity):
         self.entity_id = f"binary_sensor.{DOMAIN}_{name}_{description.key}".lower()
         self.attrs: dict[str, Any] = {}
         self.entity_description = description
-        self._state = None
+        self._attr_is_on = False
 
     def update_from_coordinator(self):
         """Update sensor state and attributes from coordinator data."""
@@ -94,7 +95,7 @@ class DVLABinarySensor(CoordinatorEntity[DVLACoordinator], BinarySensorEntity):
         if type(on_value) is str:
             return value.casefold() == on_value.casefold()
 
-        self._state = bool(value)
+        self._attr_is_on = bool(value)
 
         for key in self.coordinator.data:
             self.attrs[key] = self.coordinator.data[key]
@@ -120,7 +121,7 @@ class DVLABinarySensor(CoordinatorEntity[DVLACoordinator], BinarySensorEntity):
     @property
     def is_on(self) -> bool | None:
         """Return true if the binary sensor is on."""
-        return self._state
+        return self._attr_is_on
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:

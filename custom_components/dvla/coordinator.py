@@ -1,4 +1,5 @@
 """DVLA Coordinator."""
+
 from datetime import timedelta
 import logging
 
@@ -70,8 +71,7 @@ class DVLACoordinator(DataUpdateCoordinator):
             )
 
         if "message" in body:
-            raise UnknownError(
-                f"Error setting up {self.reg_number}: {body['message']}")
+            raise UnknownError(f"Error setting up {self.reg_number}: {body['message']}")
 
         return body
 

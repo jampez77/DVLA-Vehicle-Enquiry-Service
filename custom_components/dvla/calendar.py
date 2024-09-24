@@ -173,7 +173,8 @@ class DVLACalendarSensor(CoordinatorEntity[DVLACoordinator], CalendarEntity):
         super().__init__(coordinator)
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, f"{reg_number}")},
-            manufacturer=coordinator.data.get("make"),
+            manufacturer=DOMAIN.upper(),
+            model=coordinator.data.get("make"),
             name=reg_number.upper(),
             configuration_url="https://github.com/jampez77/DVLA-Vehicle-Checker/",
         )

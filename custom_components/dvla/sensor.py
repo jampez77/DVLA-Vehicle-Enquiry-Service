@@ -108,7 +108,8 @@ class DVLASensor(CoordinatorEntity[DVLACoordinator], SensorEntity):
         super().__init__(coordinator)
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, f"{name}")},
-            manufacturer=coordinator.data.get("make"),
+            manufacturer=DOMAIN.upper(),
+            model=coordinator.data.get("make"),
             name=name.upper(),
             configuration_url="https://github.com/jampez77/DVLA-Vehicle-Checker/",
         )
@@ -122,14 +123,18 @@ class DVLASensor(CoordinatorEntity[DVLACoordinator], SensorEntity):
         """Update sensor state and attributes from coordinator data."""
 
         self._state = self.coordinator.data.get(self.entity_description.key)
-        if (
-            self._state
-            and self.entity_description.device_class == SensorDeviceClass.DATE
-        ):
-            self._state = date.fromisoformat(self._state)
 
-        for key in self.coordinator.data:
-            self.attrs[key] = self.coordinator.data[key]
+        if self._state is not None:
+            if (
+                self._state
+                and self.entity_description.device_class == SensorDeviceClass.DATE
+            ):
+                self._state = date.fromisoformat(self._state)
+
+            for key in self.coordinator.data:
+                self.attrs[key] = self.coordinator.data[key]
+        else:
+            self.hass.async_add_job(self.async_remove())
 
     @callback
     def _handle_coordinator_update(self) -> None:
