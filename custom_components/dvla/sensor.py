@@ -90,8 +90,11 @@ async def async_setup_entry(
     name = entry.data[CONF_REG_NUMBER]
 
     sensors = [
-        DVLASensor(coordinator, name, description) for description in SENSOR_TYPES
+        DVLASensor(coordinator, name, description)
+        for description in SENSOR_TYPES
+        if description.key in coordinator.data
     ]
+
     async_add_entities(sensors, update_before_add=True)
 
 
@@ -133,8 +136,6 @@ class DVLASensor(CoordinatorEntity[DVLACoordinator], SensorEntity):
 
             for key in self.coordinator.data:
                 self.attrs[key] = self.coordinator.data[key]
-        else:
-            self.hass.async_add_job(self.async_remove())
 
     @callback
     def _handle_coordinator_update(self) -> None:

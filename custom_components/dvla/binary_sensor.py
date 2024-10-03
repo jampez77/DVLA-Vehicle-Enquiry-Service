@@ -57,8 +57,11 @@ async def async_setup_entry(
     name = entry.data[CONF_REG_NUMBER]
 
     sensors = [
-        DVLABinarySensor(coordinator, name, description) for description in SENSOR_TYPES
+        DVLABinarySensor(coordinator, name, description)
+        for description in SENSOR_TYPES
+        if description.key in coordinator.data
     ]
+
     async_add_entities(sensors, update_before_add=True)
 
 
@@ -92,15 +95,14 @@ class DVLABinarySensor(CoordinatorEntity[DVLACoordinator], BinarySensorEntity):
         value: str | bool = self.coordinator.data.get(self.entity_description.key, None)
 
         on_value = self.entity_description.on_value
+
         if type(on_value) is str:
-            return value.casefold() == on_value.casefold()
+            value = value.casefold() == on_value.casefold()
 
         self._attr_is_on = bool(value)
 
         for key in self.coordinator.data:
             self.attrs[key] = self.coordinator.data[key]
-
-        return None
 
     @callback
     def _handle_coordinator_update(self) -> None:
