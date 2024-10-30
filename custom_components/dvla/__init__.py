@@ -23,8 +23,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass_data = dict(entry.data)
     # Registers update listener to update config entry when options are updated.
     unsub_options_update_listener = entry.add_update_listener(options_update_listener)
-    # Store a reference to the unsubscribe function to cleanup if an entry is unloaded.
-    hass_data["unsub_options_update_listener"] = unsub_options_update_listener
+
+    # Use async_on_unload to register the listener without storing it in entry data
+    entry.async_on_unload(unsub_options_update_listener)
+
     hass.data[DOMAIN][entry.entry_id] = hass_data
 
     # Forward the setup to each platform.
@@ -54,8 +56,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             ]
         )
     )
-    # Remove options_update_listener.
-    hass.data[DOMAIN][entry.entry_id]["unsub_options_update_listener"]()
 
     # Remove config entry from domain.
     if unload_ok:
