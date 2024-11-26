@@ -37,7 +37,7 @@ async def async_setup_entry(
 
     reg_number = entry.data[CONF_REG_NUMBER]
 
-    calendars = entry.data[CONF_CALENDARS]
+    calendars = entry.data.get(CONF_CALENDARS,{})
 
     session = async_get_clientsession(hass)
     coordinator = DVLACoordinator(hass, session, entry.data)
