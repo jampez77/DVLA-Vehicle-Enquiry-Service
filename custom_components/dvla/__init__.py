@@ -12,7 +12,7 @@ from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN
 
-PLATFORMS = [Platform.BINARY_SENSOR, Platform.CALENDAR, Platform.SENSOR]
+PLATFORMS = [Platform.BINARY_SENSOR, Platform.SENSOR]
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -62,14 +62,3 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unload_ok
-
-
-async def handle_calendar_events(call: ServiceCall) -> None:
-    """Handle calendar events."""
-
-
-async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Set up the DVLA component from yaml configuration."""
-    hass.services.async_register("calendar", "get_events", handle_calendar_events)
-    hass.data.setdefault(DOMAIN, {})
-    return True
