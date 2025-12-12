@@ -71,6 +71,18 @@ The following attributes can be expose as attributes in HA. It's also worth ment
 - realDrivingEmissions
 
 ---
+## Services (2025.12.4+)
+Huge thanks to [ITSpecialist111](https://github.com/ITSpecialist111) who added a Home Assistant service to allow for manually looking up vehicle licence plates.
+
+Service call:
+
+`dvla.lookup`
+
+Behaviour:
+* Accepts a registration number
+* Optionally accepts an API key (otherwise uses the configured entry)
+* Performs a single DVLA Vehicle Enquiry API call
+* Returns the raw JSON response using supports_response=True
 
 [commits-shield]: https://img.shields.io/github/commit-activity/y/jampez77/DVLA-Vehicle-Enquiry-Services.svg?style=for-the-badge
 [commits]: https://github.com/jampez77/DVLA-Vehicle-Enquiry-Service/commits/main
