@@ -1,0 +1,14 @@
+lookup:
+  name: Ad-hoc DVLA lookup
+  description: Perform a one-off DVLA Vehicle Enquiry lookup and return JSON.
+  fields:
+    reg_number:
+      required: true
+      selector:
+        text: {}
+      description: Registration to query (e.g. AB12CDE).
+    api_key:
+      required: false
+      selector:
+        text: {}
+      description: Optional override API key, otherwise use the configured one.
