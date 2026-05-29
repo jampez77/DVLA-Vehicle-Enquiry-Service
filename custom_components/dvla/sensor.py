@@ -93,6 +93,9 @@ async def async_setup_entry(
         DVLASensor(coordinator, name, description)
         for description in SENSOR_TYPES
         if description.key in coordinator.data
+        # Special case: allow motExpiryDate sensor even if key is missing,
+        # so we can calculate the fallback date.
+        or description.key == "motExpiryDate"
     ]
 
     async_add_entities(sensors, update_before_add=True)
@@ -124,15 +127,38 @@ class DVLASensor(CoordinatorEntity[DVLACoordinator], SensorEntity):
 
     def update_from_coordinator(self):
         """Update sensor state and attributes from coordinator data."""
-
         self._state = self.coordinator.data.get(self.entity_description.key)
+
+        # --- Handle missing MOT Date ---
+        if self.entity_description.key == "motExpiryDate" and not self._state:
+            # If MOT date is missing, calculate 3 years from first registration month
+            reg_month_str = self.coordinator.data.get("monthOfFirstRegistration")
+            if reg_month_str:
+                try:
+                    # Parse "YYYY-MM"
+                    year_str, month_str = reg_month_str.split("-")
+                    reg_year = int(year_str)
+                    reg_month = int(month_str)
+                    
+                    # Calculate: 1st of the month + 3 years
+                    # We output as string so the standard logic below picks it up
+                    calculated_date = date(reg_year + 3, reg_month, 1)
+                    self._state = calculated_date.isoformat()
+                except (ValueError, IndexError):
+                    # Keep as None if parsing fails
+                    pass
+        # ---------------------------------------------
 
         if self._state is not None:
             if (
                 self._state
                 and self.entity_description.device_class == SensorDeviceClass.DATE
             ):
-                self._state = date.fromisoformat(self._state)
+                try:
+                    # Try to parse the string into a date object
+                    self._state = date.fromisoformat(self._state)
+                except ValueError:
+                    self._state = None
 
             for key in self.coordinator.data:
                 self.attrs[key] = self.coordinator.data[key]
@@ -151,6 +177,7 @@ class DVLASensor(CoordinatorEntity[DVLACoordinator], SensorEntity):
     @property
     def available(self) -> bool:
         """Return True if entity is available."""
+        # Ensure entity is available even if specific key is missing but we have coordinator data
         return bool(self.coordinator.data)
 
     @property
