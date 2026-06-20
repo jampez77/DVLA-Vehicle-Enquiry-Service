@@ -3,12 +3,12 @@
 from datetime import timedelta
 import logging
 
-from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL, CONTENT_TYPE_JSON
+from homeassistant.const import CONTENT_TYPE_JSON
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import CONF_REG_NUMBER, HOST
+from .const import CONF_REG_NUMBER, HOST, API_KEY
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -19,17 +19,15 @@ class DVLACoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, session, data) -> None:
         """Initialize coordinator."""
 
-        scan_interval = data.get(CONF_SCAN_INTERVAL, 21600)
         super().__init__(
             hass,
             _LOGGER,
             # Name of the data. For logging purposes.
             name="DVLA",
             # Polling interval. Will only be polled if there are subscribers.
-            update_interval=timedelta(seconds=scan_interval),
+            update_interval=timedelta(days=1),
         )
         self.session = session
-        self.api_key = data[CONF_API_KEY]
         self.reg_number = str(data[CONF_REG_NUMBER]).upper()
 
     async def _async_update_data(self):
@@ -44,7 +42,7 @@ class DVLACoordinator(DataUpdateCoordinator):
                 url=HOST,
                 headers={
                     "Content-Type": CONTENT_TYPE_JSON,
-                    "x-api-key": self.api_key,
+                    "x-api-key": API_KEY,
                 },
                 json={"registrationNumber": self.reg_number},
             )

@@ -13,19 +13,8 @@
         "step": {
             "user": {
                 "data": {
-                    "api_key": "API key",
                     "calendars": "Add events to calendar(s)",
-                    "reg_number": "Registration Number",
-                    "scan_interval": "Scan Interval (in number of seconds)"
-                }
-            }
-        }
-    },
-    "options": {
-        "step": {
-            "init": {
-                "data": {
-                    "scan_interval": "Scan Interval (in number of seconds)"
+                    "reg_number": "Registration Number"
                 }
             }
         }

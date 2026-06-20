@@ -11,7 +11,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_REG_NUMBER, DOMAIN
@@ -23,31 +23,28 @@ class DVLABinarySensorEntityDescription(BinarySensorEntityDescription):
     """DVLA binary sensor description."""
 
     on_value: str | bool = True
+    off_value: str | bool = False
 
-
-SENSOR_TYPES = [
-    DVLABinarySensorEntityDescription(
-        key="taxStatus", name="Taxed", icon="mdi:car", on_value="Taxed"
-    ),
-    DVLABinarySensorEntityDescription(
-        key="motStatus", name="MOT Valid", icon="mdi:car", on_value="Valid"
-    ),
-    DVLABinarySensorEntityDescription(
-        key="markedForExport", name="Marked for Export", icon="mdi:export"
-    ),
-]
+# Fallback/Overrides for icons and on_values
+ENTITY_METADATA = {
+    "taxStatus": {"icon": "mdi:cash-clock", "on_value": "Taxed", "off_value": "Not Taxed", "title": "Taxed"},
+    "motStatus": {"icon": "mdi:car-wrench", "on_value": "Valid", "off_value": "Invalid", "title": "MOT Valid"},
+    "markedForExport": {"icon": "mdi:shipping-pallet", "title": "Marked for Export"},
+    "automatedVehicle": {"icon": "mdi:car-connected"},
+}
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up sensors from a config entry created in the integrations UI."""
-    config = hass.data[DOMAIN][entry.entry_id]
-    # Update our config to include new repos and remove those that have been removed.
-    if entry.options:
-        config.update(entry.options)
+    config = entry.runtime_data
+    schema = config.get("schema", {})
+    vehicle_properties = (
+        schema.get("components", {}).get("schemas", {}).get("Vehicle", {}).get("properties", {})
+    )
 
     session = async_get_clientsession(hass)
     coordinator = DVLACoordinator(hass, session, entry.data)
@@ -56,11 +53,36 @@ async def async_setup_entry(
 
     name = entry.data[CONF_REG_NUMBER]
 
-    sensors = [
-        DVLABinarySensor(coordinator, name, description)
-        for description in SENSOR_TYPES
-        if description.key in coordinator.data
-    ]
+    sensors = []
+
+    for key, prop in vehicle_properties.items():
+        metadata = ENTITY_METADATA.get(key)
+
+        # Only create binary sensors for booleans OR if we have explicit metadata (like taxStatus)
+        if prop.get("type") != "boolean" and not metadata:
+            continue
+
+        # Special case: if it's not a boolean in the schema but we want it as a binary sensor
+        # (e.g. taxStatus/motStatus which are strings in schema but binary here)
+        # we need to make sure we don't duplicate if the sensor platform also picks it up.
+        # Actually, in the current design, taxStatus is both a sensor (string) and binary_sensor (bool).
+
+        on_value = True
+        off_value = False
+        if metadata:
+            on_value = metadata.get("on_value", True)
+            off_value = metadata.get("off_value", False)
+
+        description = DVLABinarySensorEntityDescription(
+            key=key,
+            name=metadata.get("title", prop.get("title", key.replace("_", " ").title())),
+            icon=metadata.get("icon", "mdi:car") if metadata else "mdi:car",
+            on_value=on_value,
+            off_value=off_value,
+        )
+
+        if key in coordinator.data:
+            sensors.append(DVLABinarySensor(coordinator, name, description))
 
     async_add_entities(sensors, update_before_add=True)
 
@@ -88,18 +110,28 @@ class DVLABinarySensor(CoordinatorEntity[DVLACoordinator], BinarySensorEntity):
         self.attrs: dict[str, Any] = {}
         self.entity_description = description
         self._attr_is_on = False
+        self.update_from_coordinator()
 
     def update_from_coordinator(self):
         """Update sensor state and attributes from coordinator data."""
+        if not self.coordinator.data:
+            return
 
-        value: str | bool = self.coordinator.data.get(self.entity_description.key, None)
-
+        value: str | bool | None = self.coordinator.data.get(self.entity_description.key)
         on_value = self.entity_description.on_value
+        off_value = self.entity_description.off_value
 
-        if type(on_value) is str:
-            value = value.casefold() == on_value.casefold()
-
-        self._attr_is_on = bool(value)
+        if value is None:
+            self._attr_is_on = None
+        elif isinstance(on_value, str) and isinstance(value, str):
+            if value.casefold() == on_value.casefold():
+                self._attr_is_on = True
+            elif isinstance(off_value, str) and value.casefold() == off_value.casefold():
+                self._attr_is_on = False
+            else:
+                self._attr_is_on = False
+        else:
+            self._attr_is_on = bool(value == on_value)
 
         for key in self.coordinator.data:
             self.attrs[key] = self.coordinator.data[key]

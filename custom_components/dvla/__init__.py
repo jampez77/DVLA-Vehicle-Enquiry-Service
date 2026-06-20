@@ -22,6 +22,7 @@ from .const import (
     DOMAIN,
     HOST,
     SERVICE_LOOKUP,
+    SCHEMA_URL,
 )
 
 PLATFORMS = [Platform.BINARY_SENSOR, Platform.SENSOR]
@@ -31,11 +32,22 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 LOOKUP_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_REG_NUMBER): cv.string,
-        vol.Optional(ATTR_API_KEY): cv.string,
     }
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+
+async def async_get_schema(hass: HomeAssistant) -> dict[str, Any]:
+    """Fetch the DVLA API schema."""
+    session = async_get_clientsession(hass)
+    try:
+        async with session.get(SCHEMA_URL) as response:
+            if response.status == 200:
+                return await response.json()
+    except Exception as err:
+        _LOGGER.error("Failed to fetch DVLA schema: %s", err)
+    return {}
 
 
 async def _async_single_lookup(
@@ -128,14 +140,19 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up platform from a ConfigEntry."""
     hass.data.setdefault(DOMAIN, {})
+
+    schema = await async_get_schema(hass)
+
     hass_data = dict(entry.data)
+    hass_data["schema"] = schema
+
     # Registers update listener to update config entry when options are updated.
     unsub_options_update_listener = entry.add_update_listener(options_update_listener)
 
     # Use async_on_unload to register the listener without storing it in entry data
     entry.async_on_unload(unsub_options_update_listener)
 
-    hass.data[DOMAIN][entry.entry_id] = hass_data
+    entry.runtime_data = hass_data
 
     # Forward the setup to each platform.
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -154,19 +171,8 @@ async def options_update_listener(hass: HomeAssistant, config_entry: ConfigEntry
         await hass.config_entries.async_reload(config_entry.entry_id)
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_unload_entry(
+    hass: HomeAssistant, entry: ConfigEntry
+) -> bool:
     """Unload a config entry."""
-    unload_ok = all(
-        await asyncio.gather(
-            *[
-                hass.config_entries.async_forward_entry_unload(entry, platform)
-                for platform in PLATFORMS
-            ]
-        )
-    )
-
-    # Remove config entry from domain.
-    if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id)
-
-    return unload_ok
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)

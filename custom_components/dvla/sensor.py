@@ -13,74 +13,54 @@ from homeassistant.const import UnitOfMass
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_REG_NUMBER, DOMAIN
 from .coordinator import DVLACoordinator
 
-SENSOR_TYPES = [
-    SensorEntityDescription(
-        key="registrationNumber", name="Registration Number", icon="mdi:car"
-    ),
-    SensorEntityDescription(key="taxStatus", name="Tax Status", icon="mdi:car"),
-    SensorEntityDescription(
-        key="taxDueDate",
-        name="Tax Due Date",
-        icon="mdi:calendar-clock",
-        device_class=SensorDeviceClass.DATE,
-    ),
-    SensorEntityDescription(key="motStatus", name="MOT Status", icon="mdi:car"),
-    SensorEntityDescription(key="make", name="Make", icon="mdi:car"),
-    SensorEntityDescription(
-        key="yearOfManufacture", name="Year of Manufacture", icon="mdi:car"
-    ),
-    SensorEntityDescription(
-        key="engineCapacity", name="Engine Capacity", icon="mdi:engine"
-    ),
-    SensorEntityDescription(
-        key="co2Emissions", name="CO2 Emissions", icon="mdi:engine"
-    ),
-    SensorEntityDescription(key="fuelType", name="Fuel Type", icon="mdi:engine"),
-    SensorEntityDescription(key="colour", name="Colour", icon="mdi:spray"),
-    SensorEntityDescription(key="typeApproval", name="Type Approval", icon="mdi:car"),
-    SensorEntityDescription(
-        key="revenueWeight",
-        name="Revenue Weight",
-        icon="mdi:weight",
-        native_unit_of_measurement=UnitOfMass.KILOGRAMS,
-    ),
-    SensorEntityDescription(
-        key="dateOfLastV5CIssued",
-        name="Date of Last V5C Issued",
-        icon="mdi:calendar",
-        device_class=SensorDeviceClass.DATE,
-    ),
-    SensorEntityDescription(
-        key="motExpiryDate",
-        name="MOT Expiry Date",
-        icon="mdi:calendar-check",
-        device_class=SensorDeviceClass.DATE,
-    ),
-    SensorEntityDescription(key="wheelplan", name="Wheelplan", icon="mdi:car"),
-    SensorEntityDescription(
-        key="monthOfFirstRegistration",
-        name="Month of First Registration",
-        icon="mdi:calendar",
-    ),
-]
+# Fallback/Overrides for icons and units
+ENTITY_METADATA = {
+    "registrationNumber": {"icon": "mdi:ocr", "title": "Registration Number"},
+    "taxStatus": {"icon": "mdi:cash-clock", "title": "Tax Status"},
+    "taxDueDate": {"icon": "mdi:calendar-clock", "device_class": SensorDeviceClass.DATE, "title": "Tax Due Date"},
+    "artEndDate": {"icon": "mdi:calendar-end", "device_class": SensorDeviceClass.DATE, "title": "Additional Rate of Tax End Date"},
+    "motStatus": {"icon": "mdi:car-wrench"},
+    "make": {"icon": "mdi:car"},
+    "yearOfManufacture": {"icon": "mdi:calendar-month"},
+    "engineCapacity": {"icon": "mdi:engine", "native_unit_of_measurement": "cc", "title": "Engine Capacity"},
+    "co2Emissions": {"icon": "mdi:molecule-co2", "native_unit_of_measurement": "g/km", "title": "CO2 Emissions"},
+    "fuelType": {"icon": "mdi:gas-station", "title": "Fuel Type"},
+    "colour": {"icon": "mdi:spray"},
+    "typeApproval": {"icon": "mdi:car"},
+    "revenueWeight": {
+        "icon": "mdi:weight-kilogram",
+        "native_unit_of_measurement": UnitOfMass.KILOGRAMS,
+    },
+    "dateOfLastV5CIssued": {"icon": "mdi:calendar", "device_class": SensorDeviceClass.DATE},
+    "motExpiryDate": {
+        "icon": "mdi:calendar-check",
+        "device_class": SensorDeviceClass.DATE,
+    },
+    "wheelplan": {"icon": "mdi:tire"},
+    "monthOfFirstRegistration": {"icon": "mdi:calendar-month", "device_class": None},
+    "monthOfFirstDvlaRegistration": {"icon": "mdi:calendar-month-outline", "device_class": None},
+    "realDrivingEmissions": {"icon": "mdi:gas-station-outline", "title": "Real Driving Emissions"},
+    "euroStatus": {"icon": "mdi:currency-eur", "title": "Euro Status"},
+}
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up sensors from a config entry created in the integrations UI."""
-    config = hass.data[DOMAIN][entry.entry_id]
-    # Update our config to include new repos and remove those that have been removed.
-    if entry.options:
-        config.update(entry.options)
+    config = entry.runtime_data
+    schema = config.get("schema", {})
+    vehicle_properties = (
+        schema.get("components", {}).get("schemas", {}).get("Vehicle", {}).get("properties", {})
+    )
 
     session = async_get_clientsession(hass)
     coordinator = DVLACoordinator(hass, session, entry.data)
@@ -89,15 +69,46 @@ async def async_setup_entry(
 
     name = entry.data[CONF_REG_NUMBER]
 
-    sensors = [
-        DVLASensor(coordinator, name, description)
-        for description in SENSOR_TYPES
-        if description.key in coordinator.data
-        # Special case: allow motExpiryDate sensor even if key is missing,
-        # so we can calculate the fallback date.
-        or description.key == "motExpiryDate"
-    ]
+    sensors = []
 
+    for key, prop in vehicle_properties.items():
+        if prop.get("type") == "boolean":
+            continue
+
+        # Skip keys that are handled by binary sensors or specifically excluded
+        # (Though most strings/integers go here)
+
+        metadata = ENTITY_METADATA.get(key, {})
+
+        # Use metadata device_class if it exists (even if it is None)
+        if "device_class" in metadata:
+            device_class = metadata["device_class"]
+        elif prop.get("format") == "date":
+            device_class = SensorDeviceClass.DATE
+        else:
+            device_class = None
+
+        unit = metadata.get("native_unit_of_measurement")
+        # Try to extract unit from description if not in metadata
+        description_text = prop.get("description", "")
+        if not unit:
+            if "cubic centimetres" in description_text:
+                unit = "cc"
+            elif "grams per kilometre" in description_text:
+                unit = "g/km"
+            elif "kilograms" in description_text:
+                unit = UnitOfMass.KILOGRAMS
+
+        description = SensorEntityDescription(
+            key=key,
+            name=metadata.get("title", prop.get("description", "")),
+            icon=metadata.get("icon", "mdi:car"),
+            device_class=device_class,
+            native_unit_of_measurement=unit,
+        )
+
+        if key in coordinator.data or key == "motExpiryDate":
+             sensors.append(DVLASensor(coordinator, name, description))
     async_add_entities(sensors, update_before_add=True)
 
 
@@ -124,6 +135,7 @@ class DVLASensor(CoordinatorEntity[DVLACoordinator], SensorEntity):
         self.attrs: dict[str, Any] = {}
         self.entity_description = description
         self._state = None
+        self.update_from_coordinator()
 
     def update_from_coordinator(self):
         """Update sensor state and attributes from coordinator data."""
@@ -139,7 +151,7 @@ class DVLASensor(CoordinatorEntity[DVLACoordinator], SensorEntity):
                     year_str, month_str = reg_month_str.split("-")
                     reg_year = int(year_str)
                     reg_month = int(month_str)
-                    
+
                     # Calculate: 1st of the month + 3 years
                     # We output as string so the standard logic below picks it up
                     calculated_date = date(reg_year + 3, reg_month, 1)
@@ -148,7 +160,6 @@ class DVLASensor(CoordinatorEntity[DVLACoordinator], SensorEntity):
                     # Keep as None if parsing fails
                     pass
         # ---------------------------------------------
-
         if self._state is not None:
             if (
                 self._state
@@ -158,7 +169,11 @@ class DVLASensor(CoordinatorEntity[DVLACoordinator], SensorEntity):
                     # Try to parse the string into a date object
                     self._state = date.fromisoformat(self._state)
                 except ValueError:
-                    self._state = None
+                    # If it's a date device class but fails parsing (e.g. "2024-03")
+                    # we keep it as a string so it's not "unknown",
+                    # but Home Assistant might still complain if the device_class is strictly DATE.
+                    # However, returning a string is better than None.
+                    pass
 
             for key in self.coordinator.data:
                 self.attrs[key] = self.coordinator.data[key]

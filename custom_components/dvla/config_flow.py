@@ -8,11 +8,9 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant import config_entries
+from homeassistant.config_entries import ConfigFlowResult, OptionsFlow, ConfigFlow, ConfigEntry
 from homeassistant.components.calendar import CalendarEntityFeature
-from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -65,27 +63,23 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     return {"title": str(data[CONF_REG_NUMBER]).upper()}
 
 
-class DVLAFlowHandler(config_entries.OptionsFlow):
+class DVLAFlowHandler(OptionsFlow):
     """Handle a option flow for DVLA."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+    def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize options flow."""
         self.config = OrderedDict()
         self.config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Manage the options."""
 
         calendar_entities = await _get_calendar_entities(self.hass)
 
         options_schema = vol.Schema(
             {
-                vol.Required(
-                    CONF_SCAN_INTERVAL,
-                    default=self.config_entry.data.get(CONF_SCAN_INTERVAL, 21600),
-                ): cv.positive_int,
                 vol.Required(
                     CONF_CALENDARS,
                     default=self.config_entry.data.get(CONF_CALENDARS, []),
@@ -105,14 +99,14 @@ class DVLAFlowHandler(config_entries.OptionsFlow):
         )
 
 
-class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class ConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for DVLA."""
 
     VERSION = 1
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle the initial step."""
 
         errors: dict[str, str] = {}
@@ -124,15 +118,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         STEP_USER_DATA_SCHEMA = vol.Schema(
             {
                 vol.Required(
-                    CONF_API_KEY, default=user_input.get(CONF_API_KEY, "")
-                ): cv.string,
-                vol.Required(
                     CONF_REG_NUMBER, default=user_input.get(CONF_REG_NUMBER, "")
                 ): cv.string,
-                vol.Required(
-                    CONF_SCAN_INTERVAL,
-                    default=user_input.get(CONF_SCAN_INTERVAL, 21600),
-                ): cv.positive_int,
                 vol.Required(
                     CONF_CALENDARS, default=user_input.get(CONF_CALENDARS, [])
                 ): cv.multi_select(calendar_entities),
@@ -175,8 +162,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(
-        config_entry: config_entries.ConfigEntry,
-    ) -> config_entries.OptionsFlow:
+        config_entry: ConfigEntry,
+    ) -> OptionsFlow:
         """Get the options flow for this handler."""
         return DVLAFlowHandler(config_entry)
 

@@ -3,10 +3,8 @@
       "step": {
         "user": {
           "data": {
-            "api_key": "[%key:common::config_flow::data::api_key%]",
             "calendars": "Add events to calendar(s)",
-            "reg_number": "Registration Number",
-            "scan_interval": "Scan Interval (in number of seconds)"
+            "reg_number": "Registration Number"
           }
         }
       },
@@ -20,14 +18,5 @@
       "abort": {
         "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
       }
-    },
-    "options": {
-        "step": {
-            "init": {
-                "data": {
-                    "scan_interval": "Scan Interval (in number of seconds)"
-                }
-            }
-        }
-      }
+    }
   }
