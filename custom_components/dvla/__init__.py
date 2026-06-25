@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import logging
 from typing import Any
 
@@ -17,6 +16,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.typing import ConfigType
 
 from .const import (
+    API_KEY,
     ATTR_API_KEY,
     ATTR_REG_NUMBER,
     DOMAIN,
@@ -51,7 +51,7 @@ async def async_get_schema(hass: HomeAssistant) -> dict[str, Any]:
 
 
 async def _async_single_lookup(
-    hass: HomeAssistant, api_key: str, reg_number: str
+    hass: HomeAssistant, reg_number: str
 ) -> Any:
     """Perform a one-off DVLA lookup."""
 
@@ -62,7 +62,7 @@ async def _async_single_lookup(
             HOST,
             headers={
                 "Content-Type": CONTENT_TYPE_JSON,
-                "x-api-key": api_key,
+                "x-api-key": API_KEY,
             },
             json={"registrationNumber": str(reg_number).upper()},
         )

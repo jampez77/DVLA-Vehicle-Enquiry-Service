@@ -69,7 +69,7 @@ class DVLAFlowHandler(OptionsFlow):
     def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize options flow."""
         self.config = OrderedDict()
-        self.config_entry = config_entry
+        self._config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -82,14 +82,23 @@ class DVLAFlowHandler(OptionsFlow):
             {
                 vol.Required(
                     CONF_CALENDARS,
-                    default=self.config_entry.data.get(CONF_CALENDARS, []),
+                    default=self._config_entry.data.get(CONF_CALENDARS, []),
                 ): cv.multi_select(calendar_entities),
             }
         )
 
         if user_input is not None:
+            if not user_input.get(CONF_CALENDARS):
+                return self.async_show_form(
+                    step_id="init",
+                    data_schema=options_schema,
+                    errors={"base": "no_calendar_selected"},
+                )
+
             self.hass.config_entries.async_update_entry(
-                self.config_entry, data=user_input, options=self.config_entry.options
+                self._config_entry,
+                data={**self._config_entry.data, **user_input},
+                options=self._config_entry.options,
             )
             return self.async_create_entry(title="", data={})
 
@@ -113,21 +122,20 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
 
         calendar_entities = await _get_calendar_entities(self.hass)
 
-        user_input = user_input or {}
-
-        STEP_USER_DATA_SCHEMA = vol.Schema(
-            {
-                vol.Required(
-                    CONF_REG_NUMBER, default=user_input.get(CONF_REG_NUMBER, "")
-                ): cv.string,
-                vol.Required(
-                    CONF_CALENDARS, default=user_input.get(CONF_CALENDARS, [])
-                ): cv.multi_select(calendar_entities),
-            }
-        )
         if user_input is None:
+            user_input = {}
+
+            STEP_USER_DATA_SCHEMA = vol.Schema(
+                {
+                    vol.Required(CONF_REG_NUMBER, default=user_input.get(CONF_REG_NUMBER, "")): cv.string,
+                    vol.Required(CONF_CALENDARS, default=user_input.get(CONF_CALENDARS, ["None"])): cv.multi_select(calendar_entities),
+                }
+            )
+
             return self.async_show_form(
-                step_id="user", data_schema=STEP_USER_DATA_SCHEMA
+                step_id="user",
+                data_schema=STEP_USER_DATA_SCHEMA,
+                errors=errors,
             )
 
         if user_input:

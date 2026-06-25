@@ -178,7 +178,7 @@ class DVLACalendarSensor(CoordinatorEntity[DVLACoordinator], CalendarEntity):
             name=reg_number.upper(),
             configuration_url="https://github.com/jampez77/DVLA-Vehicle-Checker/",
         )
-        self._attr_unique_id = f"{DOMAIN}-{reg_number}-calendar".lower()
+        self._attr_unique_id = f"{reg_number}-calendar".lower()
         self._attr_name = f"{DOMAIN} - {reg_number}".upper()
         self.reg_number = reg_number
         self.vehicle_properties = vehicle_properties

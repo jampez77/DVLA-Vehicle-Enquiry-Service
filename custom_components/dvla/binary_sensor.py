@@ -105,7 +105,7 @@ class DVLABinarySensor(CoordinatorEntity[DVLACoordinator], BinarySensorEntity):
             name=name.upper(),
             configuration_url="https://github.com/jampez77/DVLA-Vehicle-Checker/",
         )
-        self._attr_unique_id = f"{DOMAIN}-{name}-{description.key}-binary".lower()
+        self._attr_unique_id = f"{name}-{description.key}-binary".lower()
         self.entity_id = f"binary_sensor.{DOMAIN}_{name}_{description.key}".lower()
         self.attrs: dict[str, Any] = {}
         self.entity_description = description

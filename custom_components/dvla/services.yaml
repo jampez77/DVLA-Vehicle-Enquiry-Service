@@ -7,8 +7,3 @@ lookup:
       selector:
         text: {}
       description: Registration to query (e.g. AB12CDE).
-    api_key:
-      required: false
-      selector:
-        text: {}
-      description: Optional override API key, otherwise use the configured one.
