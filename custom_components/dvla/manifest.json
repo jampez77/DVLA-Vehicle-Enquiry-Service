@@ -1,12 +1,12 @@
 {
   "domain": "dvla",
   "name": "DVLA Vehicle Enquiry Service",
-  "version": "2025.12.4",
-  "config_flow": true,
-  "documentation": "https://github.com/jampez77/DVLA-Vehicle-Enquiry-Service",
-  "issue_tracker": "https://github.com/jampez77/DVLA-Vehicle-Enquiry-Service/issues",
   "codeowners": ["@jampez77"],
-  "requirements": [],
+  "config_flow": true,
   "dependencies": [],
-  "iot_class": "cloud_polling"
+  "documentation": "https://github.com/jampez77/DVLA-Vehicle-Enquiry-Service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/jampez77/DVLA-Vehicle-Enquiry-Service/issues",
+  "requirements": [],
+  "version": "2025.12.4"
 }
